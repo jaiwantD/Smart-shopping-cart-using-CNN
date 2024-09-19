@@ -1,4 +1,4 @@
-# Smart Shopping Cart System
+# Intelligrnt Shopping Cart System Using Convolutional Neural Networks
 
 ## Project Overview
 The Smart Shopping Cart System is designed to automate the billing process by utilizing object detection to identify products placed inside a cart. The system uses a camera to detect items, classifies them using TensorFlow, and handles backend communication through Flask. This version of the project includes image capture using a camera, product classification, and a web-based billing system integrated with Firebase for data storage.
