@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Image</title>
+    <style>
+        #camera, #canvas {
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Capture Image</h1>
+    <video id="camera" width="640" height="480" autoplay></video>
+    <button id="capture">Capture</button>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <form id="uploadForm" action="/" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="imageData" id="imageData">
+        <button type="button" id="upload">Upload Images</button>
+    </form>
+    <form action="/" method="post">
+        <button type="submit" name="proceed">Proceed to Billing</button>
+    </form>
+    <script>
+        const video = document.getElementById('camera');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const captureButton = document.getElementById('capture');
+        const uploadButton = document.getElementById('upload');
+        const imageDataInput = document.getElementById('imageData');
+
+        let imageCount = 0;
+
+        // Access the camera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(err => {
+                console.error('Error accessing the camera:', err);
+            });
+
+        // Capture the image from the video stream
+        captureButton.addEventListener('click', () => {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataURL = canvas.toDataURL('image/jpeg');
+            const blob = dataURLToBlob(dataURL);
+
+            // Create a FormData object and append the file
+            const formData = new FormData();
+            formData.append('file', blob, `captured_image_${++imageCount}.jpg`);
+
+            // Upload the image
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(() => {
+                alert('Image captured and uploaded successfully');
+                // Clear canvas for next image capture
+                context.clearRect(0, 0, canvas.width, canvas.height);
+            })
+            .catch(err => {
+                console.error('Error uploading the image:', err);
+            });
+        });
+
+        // Convert data URL to Blob
+        function dataURLToBlob(dataURL) {
+            const byteString = atob(dataURL.split(',')[1]);
+            const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([ab], { type: mimeString });
+        }
+    </script>
+</body>
+</html>
